@@ -1,0 +1,70 @@
+/*--------------------------------------------------------------
+ * Name:    Blinky.c
+ * Purpose: LED Pair Flasher for MCBSTM32F200
+ *--------------------------------------------------------------*/
+/*--------------------------------------------------------------
+   Main function
+ *--------------------------------------------------------------*/
+int main()
+{
+    int i;
+    unsigned long int j;
+
+    i = 0;
+    j = 0;
+
+    //Enable port G, H, I clocking (bits 6, 7, 8)
+    *(unsigned long*)(0x40023830) |= (0x40 | 0x80 | 0x100);
+
+    for (i = 0; i < 4; i++) {} //small delay for GPIO get ready
+
+    //Set PG6, PG8 as output
+    *(unsigned long*)(0x40021800) &= ~((3 << 12) | (3 << 16));
+    *(unsigned long*)(0x40021800) |=  ((1 << 12) | (1 << 16));
+
+    //Set PH2, PH3, PH6, PH7 as output
+    *(unsigned long*)(0x40021C00) &= ~((3 << 4) | (3 << 6) | (3 << 12) | (3 << 14));
+    *(unsigned long*)(0x40021C00) |=  ((1 << 4) | (1 << 6) | (1 << 12) | (1 << 14));
+
+    //Set PI10 as output
+    *(unsigned long*)(0x40022000) &= ~(3 << 20);
+    *(unsigned long*)(0x40022000) |=  (1 << 20);
+
+    while (1)
+    {
+        //Pair 1: PH3, PH6 ON
+        *(unsigned long*)(0x40021C14) |= (0x08 | 0x40);
+        //Pair 2: PH7, PI10 OFF
+        *(unsigned long*)(0x40021C14) &= ~0x80;
+        *(unsigned long*)(0x40022014) &= ~(0x400);
+        //Pair 3: PG6, PG8 OFF
+        *(unsigned long*)(0x40021814) &= ~(0x40 | 0x100);
+        //Pair 4: PH2 OFF
+        *(unsigned long*)(0x40021C14) &= ~0x04;
+
+        for (j = 0; j < 2000000; j++) {} //Delay
+
+        //Pair 1: PH3, PH6 OFF
+        *(unsigned long*)(0x40021C14) &= ~(0x08 | 0x40);
+        //Pair 2: PH7, PI10 ON
+        *(unsigned long*)(0x40021C14) |= 0x80;
+        *(unsigned long*)(0x40022014) |= (0x400);
+
+        for (j = 0; j < 2000000; j++) {} //Delay
+
+        //Pair 2: PH7, PI10 OFF
+        *(unsigned long*)(0x40021C14) &= ~0x80;
+        *(unsigned long*)(0x40022014) &= ~(0x400);
+        //Pair 3: PG6, PG8 ON
+        *(unsigned long*)(0x40021814) |= (0x40 | 0x100);
+
+        for (j = 0; j < 2000000; j++) {} //Delay
+
+        //Pair 3: PG6, PG8 OFF
+        *(unsigned long*)(0x40021814) &= ~(0x40 | 0x100);
+        //Pair 4: PH2 ON (one LED alone)
+        *(unsigned long*)(0x40021C14) |= 0x04;
+
+        for (j = 0; j < 2000000; j++) {} //Delay
+    }
+}
