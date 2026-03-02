@@ -1,5 +1,5 @@
 # Fdb version 4
-["pdflatex"] 1772031570.71727 "main.tex" "main.pdf" "main" 1772031571.46457 0
+["pdflatex"] 1772035783.49276 "/Users/ilyasemenov/politech/sem4/miccontrol/labs/lab1/main.tex" "main.pdf" "main" 1772035784.20371 0
   "/Users/ilyasemenov/Library/texlive/2025/texmf-var/fonts/tfm/lh/lh-t2a/labx1440.tfm" 1750339321.8998 3304 6a543c07045572737981351171e0505e ""
   "/Users/ilyasemenov/Library/texlive/2025/texmf-var/fonts/tfm/lh/lh-t2a/labx1728.tfm" 1750339323.94353 3312 d199be9bd555944e2403193d58a0256a ""
   "/Users/ilyasemenov/Library/texlive/2025/texmf-var/fonts/tfm/lh/lh-t2a/lait1200.tfm" 1750339338.39488 1272 c53ef695a9dd070a643f2fc00d8ea842 ""
@@ -7,6 +7,7 @@
   "/Users/ilyasemenov/Library/texlive/2025/texmf-var/fonts/tfm/lh/lh-t2a/larm1728.tfm" 1750339319.74597 3252 92d08740ce00199d6cf9ff4aaada81d1 ""
   "/Users/ilyasemenov/Library/texlive/2025/texmf-var/fonts/tfm/lh/lh-t2a/latt1200.tfm" 1750339334.34285 1272 bf3bb5cc29880b269c8bcb412a1ac6e2 ""
   "/Users/ilyasemenov/Library/texlive/2025/texmf-var/fonts/tfm/lh/lh-t2a/latt1440.tfm" 1750339330.01157 1272 e3abe42d6bdbd8626fffa22fcb43f669 ""
+  "/Users/ilyasemenov/politech/sem4/miccontrol/labs/lab1/main.tex" 1772031004.61489 203 23ec22a0203d202fee3dc6fc1266524b ""
   "/usr/local/texlive/2025/texmf-dist/fonts/enc/dvips/cm-super/cm-super-t2a.enc" 1136849721 3141 82d5616418ed8d5de703b3951bedecb4 ""
   "/usr/local/texlive/2025/texmf-dist/fonts/map/fontname/texfonts.map" 1577235249 3524 cb3e574dea2d1052e39280babc910dc8 ""
   "/usr/local/texlive/2025/texmf-dist/fonts/tfm/public/amsfonts/cmextra/cmex7.tfm" 1246382020 1004 54797486969f23fa377b128694d548df ""
@@ -185,14 +186,14 @@
   "img/2026-02-25_16.08.48.jpg" 1772024843.78798 208735 ebb983398251a2d38ffb4f11bbd66ed5 ""
   "img/2026-02-25_16.08.52.jpg" 1772024843.7885 209640 726ea35e8c5f1cd64147c8e2e0ad7e46 ""
   "img/2026-02-25_16.08.58.jpg" 1772024936.4756 212444 32819ae402e70e1c9a3438ef6f0e9b32 ""
-  "main.aux" 1772031571.38151 393 ba6107ada8f99d21fd01e5c7062fdd48 "pdflatex"
-  "main.out" 1772031571.17153 0 d41d8cd98f00b204e9800998ecf8427e "pdflatex"
+  "main.aux" 1772035784.1173 393 ba6107ada8f99d21fd01e5c7062fdd48 "pdflatex"
+  "main.out" 1772035783.92393 0 d41d8cd98f00b204e9800998ecf8427e "pdflatex"
   "main.tex" 1772031004.61489 203 23ec22a0203d202fee3dc6fc1266524b ""
   "tex/lib/barrel.tex" 1771927523.42161 2454 6af5e09d5c2ca41263940c31059787f7 ""
   "tex/lib/macroses.tex" 1771927523.42131 228 30ef9d5a27e072c1e23a7824e09acf59 ""
-  "tex/pages/основная_часть.aux" 1772031571.38127 2705 25ba6838081262a3b84f10efe4c59e20 "pdflatex"
-  "tex/pages/основная_часть.tex" 1772031008.37287 10285 15e6436ccce6090aa2e8c2dcc25c248a ""
-  "tex/pages/титульник.aux" 1772031571.29734 768 347435c922bf7f45ca00112c4425bfe2 "pdflatex"
+  "tex/pages/основная_часть.aux" 1772035784.11706 2705 25ba6838081262a3b84f10efe4c59e20 "pdflatex"
+  "tex/pages/основная_часть.tex" 1772035783.41867 10285 15e6436ccce6090aa2e8c2dcc25c248a ""
+  "tex/pages/титульник.aux" 1772035784.0457 768 347435c922bf7f45ca00112c4425bfe2 "pdflatex"
   "tex/pages/титульник.tex" 1772031546.73751 1421 9fe53ceb538e14c5ab80911ba76b7078 ""
   (generated)
   "main.aux"
