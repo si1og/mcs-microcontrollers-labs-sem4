@@ -1,0 +1,36 @@
+/*--------------------------------------------------------------
+ * Name:    Blinky.c
+ * Purpose: LED PG6-PG9 Flasher for MCBSTM32F200
+ *--------------------------------------------------------------*/
+/*--------------------------------------------------------------
+   Main function
+ *--------------------------------------------------------------*/
+int main()
+{
+    int i;
+    unsigned long int j;
+
+    i = 0;
+    j = 0;
+
+    *(unsigned long*)(0x40023830) |= 0x40; //Enable port G clocking
+
+    for (i = 0; i < 4; i++) {} //small delay for GPIOG get ready
+
+    //Set PG6, PG7, PG8, PG9 as General purpose output
+    *(unsigned long*)(0x40021800) &= ~((3 << 12) | (3 << 14) | (3 << 16) | (3 << 18));
+    *(unsigned long*)(0x40021800) |=  ((1 << 12) | (1 << 14) | (1 << 16) | (1 << 18));
+
+    while (1)
+    {
+        *(unsigned long*)(0x40021814) |= (0x40 | 0x80);           //Turn LED PG6, PG7 ON
+        *(unsigned long*)(0x40021814) &= ~(0x100 | 0x200);        //Turn LED PG8, PG9 OFF
+
+        for (j = 0; j < 2000000; j++) {} //Delay
+
+        *(unsigned long*)(0x40021814) &= ~(0x40 | 0x80);          //Turn LED PG6, PG7 OFF
+        *(unsigned long*)(0x40021814) |= (0x100 | 0x200);         //Turn LED PG8, PG9 ON
+
+        for (j = 0; j < 2000000; j++) {} //Delay
+    }
+}
