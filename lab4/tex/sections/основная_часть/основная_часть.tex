@@ -1,0 +1,178 @@
+\section{Цель работы}
+
+Ознакомиться с основными методами формирования заданных интервалов времени и перевода микроконтроллера в режим пониженного энергопотребления.
+Закрепить навыки работы с осциллографом и оценочной платой MCBSTM32F200 в качестве измерительного генератора.
+
+\section{Постановка задачи}
+
+Разработать программу для микроконтроллера STM32F200, которая при помощи таймера формирует периодическое попеременное включение и выключение светодиодов PG6 и PG7 с заданными временными характеристиками.
+При нажатии на кнопку WAKEUP программа должна переводить микроконтроллер в спящий режим, а при ее отпускании --- пробуждать микроконтроллер.
+
+\section{Выполнение работы}
+
+В среде Keil $\mu$Vision5 был создан проект, в котором реализовано управление светодиодами с использованием таймера и обработка внешнего прерывания.
+Ниже приведены ключевые фрагменты программы и пояснения.
+
+\subsection{Функция задержки}
+
+Для создания программной задержки используется простая пустая петля.
+Переменная цикла объявлена с квалификатором \verb|volatile|, чтобы компилятор не оптимизировал цикл.
+
+\begin{listing}[H]
+\caption{Delay function (milliseconds)}
+\begin{minted}[linenos]{c}
+void delay_ms(uint32_t milliseconds) {
+    volatile uint32_t i;
+    for (i = 0; i < (milliseconds * 4200U); i++) { __NOP(); }
+}
+\end{minted}
+\end{listing}
+
+\subsection{Инициализация GPIO}
+
+Включается тактирование портов GPIOA и GPIOG, настраиваются выводы PG6 и PG7 как выходы, а PA0 как вход для кнопки WAKEUP.
+
+\begin{listing}[H]
+\caption{GPIO initialization}
+\begin{minted}[linenos]{c}
+RCC->AHB1ENR |= RCC_AHB1ENR_GPIOAEN | RCC_AHB1ENR_GPIOGEN;
+
+/* PG6, PG7 */
+GPIOG->MODER &= ~((3U << (6*2)) | (3U << (7*2)));
+GPIOG->MODER |=   (1U << (6*2)) | (1U << (7*2));
+
+/* PA0 (WAKEUP) */
+GPIOA->MODER &= ~(3U << (0*2));
+\end{minted}
+\end{listing}
+
+\subsection{Настройка таймера TIM2}
+
+Таймер TIM2 настраивается с предделителем и автоперезагрузкой.
+После настройки включается прерывание по обновлению, задается приоритет обработчика и разрешается работа таймера.
+
+\begin{listing}[H]
+\caption{TIM2 setup}
+\begin{minted}[linenos]{c}
+RCC->APB1ENR |= RCC_APB1ENR_TIM2EN;
+
+TIM2->PSC = 119990U;
+TIM2->ARR = 249U;
+
+TIM2->CR1  |= TIM_CR1_ARPE | TIM_CR1_URS;
+TIM2->DIER |= TIM_DIER_UIE;
+TIM2->CR1  |= TIM_CR1_CEN;
+
+NVIC_SetPriority(TIM2_IRQn, 0);
+NVIC_EnableIRQ(TIM2_IRQn);
+\end{minted}
+\end{listing}
+
+\subsection{Обработчик прерывания таймера}
+
+При каждом переполнении таймера выполняется переключение светодиодов PG6 и PG7.
+После обработки события сбрасывается флаг прерывания таймера.
+
+\begin{listing}[H]
+\caption{TIM2 IRQ Handler}
+\begin{minted}[linenos]{c}
+void TIM2_IRQHandler(void) {
+    if (TIM2->SR & TIM_SR_UIF) {
+        GPIOG->ODR ^= (1U << 6) | (1U << 7);
+        TIM2->SR &= ~TIM_SR_UIF;
+    }
+}
+\end{minted}
+\end{listing}
+
+\subsection{Настройка внешнего прерывания EXTI0 (WAKEUP)}
+
+Включается тактирование SYSCFG, линия EXTI0 привязывается к PA0, разрешается прерывание по обоим фронтам и настраивается NVIC.
+
+\begin{listing}[H]
+\caption{EXTI0 setup}
+\begin{minted}[linenos]{c}
+RCC->APB2ENR |= RCC_APB2ENR_SYSCFGEN;
+
+SYSCFG->EXTICR[0] &= ~SYSCFG_EXTICR1_EXTI0;
+SYSCFG->EXTICR[0] |=  SYSCFG_EXTICR1_EXTI0_PA;
+
+EXTI->IMR  |= EXTI_IMR_MR0;
+EXTI->RTSR |= EXTI_RTSR_TR0;
+EXTI->FTSR |= EXTI_FTSR_TR0;
+
+NVIC_SetPriority(EXTI0_IRQn, 0);
+NVIC_EnableIRQ(EXTI0_IRQn);
+\end{minted}
+\end{listing}
+
+\subsection{Обработчик EXTI0}
+
+Обработчик реализует подавление дребезга, переключение режимов сна (\verb|SLEEPDEEP|, \verb|SLEEPONEXIT|) и изменение типа срабатывания EXTI для корректного входа в сон и пробуждения.
+
+\begin{listing}[H]
+\caption{EXTI0 IRQ Handler}
+\begin{minted}[linenos]{c}
+void EXTI0_IRQHandler(void) {
+    if (EXTI->PR & EXTI_PR_PR0) {
+        delay_ms(100); /* debounce */
+
+        if (!sleep_mode) {
+            /* Enter deep sleep on exit from IRQ */
+            SCB->SCR |= SCB_SCR_SLEEPDEEP_Msk;
+            SCB->SCR |= SCB_SCR_SLEEPONEXIT_Msk;
+
+            /* Switch EXTI to falling edge for wake-up */
+            EXTI->RTSR &= ~EXTI_RTSR_TR0;
+            EXTI->FTSR |= EXTI_FTSR_TR0;
+            sleep_mode = true;
+        } else {
+            /* Exit sleep mode */
+            SCB->SCR &= ~SCB_SCR_SLEEPONEXIT_Msk;
+            SCB->SCR &= ~SCB_SCR_SLEEPDEEP_Msk;
+
+            /* Restore EXTI to trigger on rising edge */
+            EXTI->RTSR |= EXTI_RTSR_TR0;
+            EXTI->FTSR &= ~EXTI_FTSR_TR0;
+            sleep_mode = false;
+        }
+
+        /* Clear EXTI pending flag */
+        EXTI->PR = EXTI_PR_PR0;
+    }
+}
+\end{minted}
+\end{listing}
+
+\section{Работа с осциллографом}
+
+При исследовании сигнала на выходе микроконтроллера был получен прямоугольный сигнал.
+По экрану осциллографа период сигнала составил примерно $T = 1.9$ с, что соответствует частоте около $f = 0.53$ Гц.
+По встроенным измерениям осциллографа были определены времена нарастания и спада сигнала, после чего фронт и спад были рассмотрены на растянутой временной развертке.
+
+\screenshot{IMG_20260414_123652.jpg}{Осциллограмма прямоугольного сигнала на выходе микроконтроллера.}
+
+На фотографии \ref{fig:IMG_20260414_123907.jpg} показан результат автоматического измерения времени нарастания.
+Измеренное время нарастания составило $t_r = 10.16~\text{нс}$, размах сигнала составил примерно $V_{pp}=3.64$ В.
+
+\screenshot{IMG_20260414_123907.jpg}{Явное измерение времени нарастания сигнала.}
+
+На фотографии \ref{fig:IMG_20260414_125842.jpg} показан результат автоматического измерения времени спада.
+Измеренное время спада равно $t_f = 10.11~\text{нс}$, размах сигнала составил примерно $V_{pp}=3.60$ В.
+
+\screenshot{IMG_20260414_125842.jpg}{Явное измерение времени спада сигнала.}
+
+После явного измерения был растянут фронт сигнала для визуальной проверки формы переходного процесса.
+
+\screenshot{IMG_20260414_125223_1.jpg}{Растянутое изображение фронта сигнала.}
+
+Также был растянут спад сигнала.
+На экране осциллографа дополнительно отображалось значение $t_f = 10.10~\text{нс}$.
+
+\screenshot{IMG_20260414_125909.jpg}{Растянутое изображение спада сигнала.}
+
+\section{Вывод}
+
+В ходе выполнения лабораторной работы была разработана программа для микроконтроллера STM32F200, реализующая формирование временных интервалов при помощи таймера TIM2 и обработку внешнего прерывания от кнопки WAKEUP.
+Были изучены настройка таймера, обработка его прерывания, работа с EXTI и перевод микроконтроллера в спящий режим.
+С помощью осциллографа были измерены параметры выходного сигнала: период около $1.9$ с, частота около $0.53$ Гц, размах около $3.64$ В, время нарастания $10.16$ нс и время спада $10.11$ нс.

@@ -1,0 +1,18 @@
+\documentclass[a4paper]{article}
+\input{../tex/lib/barrel.tex}
+
+\begin{document}
+
+\input{tex/pages/титульник}
+
+\tableofcontents
+\newpage
+\input{tex/sections/основная_часть/основная_часть}
+
+\clearpage
+\section*{Приложение. Полный текст программы}
+\addcontentsline{toc}{section}{Приложение. Полный текст программы}
+
+\inputminted[linenos]{c}{res/main.c}
+
+\end{document}
